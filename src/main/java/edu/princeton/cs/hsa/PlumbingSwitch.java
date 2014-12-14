@@ -100,8 +100,14 @@ public class PlumbingSwitch implements OVXSendMsg {
 		
 	    if (msg.getType() == OFType.FLOW_MOD) {
 		
-		//this.logger.info("{} get msg {}", this, msg);
-		OVXFlowMod ovxMsg = new OVXFlowMod((OFFlowMod) msg);
+		this.logger.info("{} get msg {}", this, msg);
+		OFFlowMod ofMsg = (OFFlowMod) msg;
+		OVXFlowMod ovxMsg = new OVXFlowMod(ofMsg);
+		if (ovxMsg == null) {
+		    this.logger.info("ovxMsg is null.");
+		} else {
+		    this.logger.info("ovxMsg isn't null.");
+		}
 		PolicyUpdateTable updateTable1 =
 		    this.policyTree.update(ovxMsg, ((OVXSwitch) from).getTenantId());
 		PolicyUpdateTable updateTable2 = new PolicyUpdateTable();
@@ -124,12 +130,17 @@ public class PlumbingSwitch implements OVXSendMsg {
 		    this.graph.getPhysicalSwitch().sendMsg(fm, this);
 		}
 		
-		this.logger.info("left child {}", this.policyTree.leftChild.flowTable);
-		this.logger.info("right child {}", this.policyTree.rightChild.flowTable);
-		this.logger.info("plumbing {} flow table {}", this.id, this.policyTree.flowTable);
-		//this.logger.info("graph flow table {}", this.graph.flowTable);
+		this.logger.info("left child {}", this.policyTree.leftChild.
+				 flowTable);
+		this.logger.info("right child {}", this.policyTree.rightChild.
+				 flowTable);
+		this.logger.info("plumbing {} flow table {}", this.id,
+				 this.policyTree.flowTable);
+		this.logger.info("graph flow table {}", this.graph.
+				 flowTable);
 		
 	    } else {
+		this.logger.debug("DIFFERENT TYPE OF MESSAGE.");
 		this.graph.getPhysicalSwitch().sendMsg(msg, this);
 	    }
 	    

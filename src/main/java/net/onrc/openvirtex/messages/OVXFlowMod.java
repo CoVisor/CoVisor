@@ -80,6 +80,8 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 
 	// Start with this in childrenFlowMods.
 	this.childrenFlowMods.add(this);
+
+	this.log.info("Hi, I'm a new OVXFlowMod:  " + toString());
     }
 
     public void removeChildFlowMod(OVXFlowMod child) {
@@ -105,6 +107,18 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	}
 	final OVXFlowMod other = (OVXFlowMod) obj;
 	return super.equals(other);
+    }
+
+    public String toString() {
+	String s = "OVXFlowMod:  " + super.toString();
+	String children = "Children:  [";
+	for (OVXFlowMod child : this.childrenFlowMods) {
+	    if (!child.equals(this)) {
+	    children += child.toString() + "\n";
+	    }
+	}
+	children += "]";
+	return s + "\n" + children;
     }
     
     @Override

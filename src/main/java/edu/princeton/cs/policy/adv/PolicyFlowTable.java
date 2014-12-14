@@ -89,7 +89,6 @@ public class PolicyFlowTable {
 	
 	PolicyUpdateTable updateTable = new PolicyUpdateTable();
 	updateTable.addFlowMods.add(fm);
-	System.out.println(updateTable);
 	return updateTable;
     }
     
@@ -100,7 +99,6 @@ public class PolicyFlowTable {
 	if (deletedFm != null) {
 	    updateTable.deleteFlowMods.add(deletedFm);
 	}
-	System.out.println(updateTable);
 	return updateTable;
     }
     
