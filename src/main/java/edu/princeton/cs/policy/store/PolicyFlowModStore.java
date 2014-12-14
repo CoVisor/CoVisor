@@ -2,7 +2,7 @@ package edu.princeton.cs.policy.store;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import net.onrc.openvirtex.messages.OVXFlowMod;
 import org.openflow.protocol.OFFlowMod;
 
 public abstract class PolicyFlowModStore {
@@ -79,19 +79,19 @@ public abstract class PolicyFlowModStore {
 		return str;
 	}
 
-	public abstract void setStore(List<OFFlowMod> flowMods);
+	public abstract void setStore(List<OVXFlowMod> flowMods);
 	
 	public abstract void clear();
 
-	public abstract void add(OFFlowMod fm);
+	public abstract void add(OVXFlowMod fm);
 
-	public abstract OFFlowMod remove(OFFlowMod fm);
+	public abstract OVXFlowMod remove(OVXFlowMod fm);
 
-	public abstract List<OFFlowMod> removaAll(List<OFFlowMod> flowMods);
+	public abstract List<OVXFlowMod> removaAll(List<OVXFlowMod> flowMods);
 	
-	public abstract List<OFFlowMod> getFlowMods();
+	public abstract List<OVXFlowMod> getFlowMods();
 
-	public abstract List<OFFlowMod> getPotentialFlowMods(OFFlowMod fm);
+	public abstract List<OVXFlowMod> getPotentialFlowMods(OVXFlowMod fm);
 	
 	public static PolicyFlowModStore createFlowModStore(List<PolicyFlowModStoreType> storeTypes,
 			List<PolicyFlowModStoreKey> storeKeys,

@@ -4,20 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openflow.protocol.OFFlowMod;
+import net.onrc.openvirtex.messages.OVXFlowMod;
 
 public class PolicyFlowModStoreList extends PolicyFlowModStore {
 	
-	private List<OFFlowMod> flowMods;
+	private List<OVXFlowMod> flowMods;
 	
 	public PolicyFlowModStoreList (List<PolicyFlowModStoreType> storeTypes,
 			List<PolicyFlowModStoreKey> storeKeys,
 			Boolean isLeftInSequentialComposition) {
 		super(storeTypes, storeKeys, isLeftInSequentialComposition);
-		this.flowMods = new ArrayList<OFFlowMod>();
+		this.flowMods = new ArrayList<OVXFlowMod>();
 	}
 
 	@Override
-	public void setStore(List<OFFlowMod> flowMods) {
+	public void setStore(List<OVXFlowMod> flowMods) {
 		this.flowMods = flowMods;
 	}
 
@@ -27,14 +28,14 @@ public class PolicyFlowModStoreList extends PolicyFlowModStore {
 	}
 
 	@Override
-	public void add(OFFlowMod fm) {
+	public void add(OVXFlowMod fm) {
 		this.flowMods.add(fm);
 	}
 
 	@Override
-	public OFFlowMod remove(OFFlowMod fm) {
-		OFFlowMod toDelete = null;
-		for (OFFlowMod curFlowMod : this.flowMods) {
+	public OVXFlowMod remove(OVXFlowMod fm) {
+		OVXFlowMod toDelete = null;
+		for (OVXFlowMod curFlowMod : this.flowMods) {
 			if (curFlowMod.getMatch().equals(fm.getMatch()) && curFlowMod.getPriority() == fm.getPriority()) {
 				toDelete = curFlowMod;
 				break;
@@ -47,10 +48,10 @@ public class PolicyFlowModStoreList extends PolicyFlowModStore {
 	}
 
 	@Override
-	public List<OFFlowMod> removaAll(List<OFFlowMod> flowMods) {
-		List<OFFlowMod> toDelete = new ArrayList<OFFlowMod>();
-		for (OFFlowMod fm : flowMods) {
-			for (OFFlowMod curFlowMod : this.flowMods) {
+	public List<OVXFlowMod> removaAll(List<OVXFlowMod> flowMods) {
+		List<OVXFlowMod> toDelete = new ArrayList<OVXFlowMod>();
+		for (OVXFlowMod fm : flowMods) {
+			for (OVXFlowMod curFlowMod : this.flowMods) {
 				if (curFlowMod.getMatch().equals(fm.getMatch()) && curFlowMod.getPriority() == fm.getPriority()) {
 					toDelete.add(curFlowMod);
 					break;
@@ -62,12 +63,12 @@ public class PolicyFlowModStoreList extends PolicyFlowModStore {
 	}
 
 	@Override
-	public List<OFFlowMod> getFlowMods() {
+	public List<OVXFlowMod> getFlowMods() {
 		return this.flowMods;
 	}
 
 	@Override
-	public List<OFFlowMod> getPotentialFlowMods(OFFlowMod fm) {
+	public List<OVXFlowMod> getPotentialFlowMods(OVXFlowMod fm) {
 		return this.flowMods;
 	}
 

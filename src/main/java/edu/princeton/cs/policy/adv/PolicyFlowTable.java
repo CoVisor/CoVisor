@@ -28,44 +28,49 @@ import edu.princeton.cs.policy.store.PolicyFlowModStore;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 
+import net.onrc.openvirtex.messages.OVXFlowMod;
 
 public class PolicyFlowTable {
 
-	private ConcurrentHashMap<OFFlowMod, List<OFFlowMod>> generatedParentFlowModsDictionary;
-	private PolicyFlowModStore flowModStore;
+    private ConcurrentHashMap<OVXFlowMod, List<OVXFlowMod>>
+	generatedParentFlowModsDictionary;
+    private PolicyFlowModStore flowModStore;
+    
+    public PolicyFlowTable() {
+	this.generatedParentFlowModsDictionary =
+	    new ConcurrentHashMap<OVXFlowMod, List<OVXFlowMod>>();
 	
-	public PolicyFlowTable() {
-		this.generatedParentFlowModsDictionary = new ConcurrentHashMap<OFFlowMod, List<OFFlowMod>>();
-		
-		List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
-		storeTypes.add(PolicyFlowModStoreType.WILDCARD);
+	List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
+	storeTypes.add(PolicyFlowModStoreType.WILDCARD);
     	List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
     	storeKeys.add(PolicyFlowModStoreKey.ALL);
     	this.flowModStore = PolicyFlowModStore.createFlowModStore(storeTypes, storeKeys, false);
-	}
-
-	public PolicyFlowTable(List<PolicyFlowModStoreType> storeTypes,
-			List<PolicyFlowModStoreKey> storeKeys,
-			boolean isLeftInSequentialComposition) {
-		this.generatedParentFlowModsDictionary = new ConcurrentHashMap<OFFlowMod, List<OFFlowMod>>();
-		this.flowModStore = PolicyFlowModStore.createFlowModStore(storeTypes, storeKeys, isLeftInSequentialComposition);
-	}
+    }
+    
+    public PolicyFlowTable(List<PolicyFlowModStoreType> storeTypes,
+			   List<PolicyFlowModStoreKey> storeKeys,
+			   boolean isLeftInSequentialComposition) {
+	this.generatedParentFlowModsDictionary =
+	    new ConcurrentHashMap<OVXFlowMod, List<OVXFlowMod>>();
+	this.flowModStore = PolicyFlowModStore.
+	    createFlowModStore(storeTypes, storeKeys, isLeftInSequentialComposition);
+    }
+    
+    public void addFlowMod(OVXFlowMod fm) {
+	this.flowModStore.add(fm);
+	this.generatedParentFlowModsDictionary.put(fm, new ArrayList<OVXFlowMod>());
+    }
 	
-	public void addFlowMod(OFFlowMod fm) {
-		this.flowModStore.add(fm);
-		this.generatedParentFlowModsDictionary.put(fm, new ArrayList<OFFlowMod>());
-	}
-	
-	public void setTable(List<OFFlowMod> flowMods) {
-		this.flowModStore.setStore(flowMods);
-	}
-	
-	public void clearTable() {
-		this.flowModStore.clear();
-	}
-	
-	public PolicyUpdateTable update (OFFlowMod fm) {
-		switch (fm.getCommand()) {
+    public void setTable(List<OVXFlowMod> flowMods) {
+	this.flowModStore.setStore(flowMods);
+    }
+    
+    public void clearTable() {
+	this.flowModStore.clear();
+    }
+    
+    public PolicyUpdateTable update (OVXFlowMod fm) {
+	switch (fm.getCommand()) {
         case OFFlowMod.OFPFC_ADD:
             return doFlowModAdd(fm);
         case OFFlowMod.OFPFC_MODIFY:
@@ -77,87 +82,89 @@ public class PolicyFlowTable {
         default:
             return null;
         }
-	}
-
-	private PolicyUpdateTable doFlowModAdd(OFFlowMod fm) {
-		this.addFlowMod(fm);
-		
-		PolicyUpdateTable updateTable = new PolicyUpdateTable();
-		updateTable.addFlowMods.add(fm);
-		return updateTable;
-	}
+    }
+    
+    private PolicyUpdateTable doFlowModAdd(OVXFlowMod fm) {
+	this.addFlowMod(fm);
 	
-	private PolicyUpdateTable doFlowModDelete(OFFlowMod fm) {
-		OFFlowMod deletedFm = this.flowModStore.remove(fm);
-		
-		PolicyUpdateTable updateTable = new PolicyUpdateTable();
-		if (deletedFm != null) {
-			updateTable.deleteFlowMods.add(deletedFm);
+	PolicyUpdateTable updateTable = new PolicyUpdateTable();
+	updateTable.addFlowMods.add(fm);
+	System.out.println(updateTable);
+	return updateTable;
+    }
+    
+    private PolicyUpdateTable doFlowModDelete(OVXFlowMod fm) {
+	OVXFlowMod deletedFm = this.flowModStore.remove(fm);
+	
+	PolicyUpdateTable updateTable = new PolicyUpdateTable();
+	if (deletedFm != null) {
+	    updateTable.deleteFlowMods.add(deletedFm);
+	}
+	System.out.println(updateTable);
+	return updateTable;
+    }
+    
+    public List<OVXFlowMod> getFlowMods() {
+	return this.flowModStore.getFlowMods();
+    }
+	
+    public List<OVXFlowMod> getFlowModsSorted() {
+	List<OVXFlowMod> flowMods = this.flowModStore.getFlowMods();
+	Collections.sort(flowMods, new Comparator<OVXFlowMod>() {
+		public int compare(OVXFlowMod fm1, OVXFlowMod fm2) {
+		    return fm2.getPriority() - fm1.getPriority();
 		}
-		
-		return updateTable;
-	}
-	
-	public List<OFFlowMod> getFlowMods() {
-		return this.flowModStore.getFlowMods();
-	}
-	
-	public List<OFFlowMod> getFlowModsSorted() {
-		List<OFFlowMod> flowMods = this.flowModStore.getFlowMods();
-		Collections.sort(flowMods, new Comparator<OFFlowMod>() {
-			public int compare(OFFlowMod fm1, OFFlowMod fm2) {
-				return fm2.getPriority() - fm1.getPriority();
-			}
-		});
-		return flowMods;
-	}
-	
-	public List<OFFlowMod> getFlowModsSortByInport() {
-		List<OFFlowMod> flowMods = this.flowModStore.getFlowMods();
-		Collections.sort(flowMods, new Comparator<OFFlowMod>() {
-			public int compare(OFFlowMod fm1, OFFlowMod fm2) {
-				if (fm1.getMatch().getInputPort() != fm2.getMatch().getInputPort()) {
-					return fm1.getMatch().getInputPort() - fm2.getMatch().getInputPort();
-				} else {
-					return fm2.getPriority() - fm1.getPriority();
-				}
-			}
-		});
-		return flowMods;
-	}
-	
-	@Override
+	    });
+	return flowMods;
+    }
+    
+    public List<OVXFlowMod> getFlowModsSortByInport() {
+	List<OVXFlowMod> flowMods = this.flowModStore.getFlowMods();
+	Collections.sort(flowMods, new Comparator<OVXFlowMod>() {
+		public int compare(OVXFlowMod fm1, OVXFlowMod fm2) {
+		    if (fm1.getMatch().getInputPort() != fm2.getMatch().getInputPort()) {
+			return fm1.getMatch().getInputPort() - fm2.getMatch().getInputPort();
+		    } else {
+			return fm2.getPriority() - fm1.getPriority();
+		    }
+		}
+	    });
+	return flowMods;
+    }
+    
+    @Override
     public String toString() {
-		String str = "Flow Table\t" + this.flowModStore + "\n";
-		for (OFFlowMod fm : this.flowModStore.getFlowMods()) {
-			str = str + fm.toString() + "\n";
-		}
-		return str;
+	String str = "Flow Table\t" + this.flowModStore + "\n";
+	for (OVXFlowMod fm : this.flowModStore.getFlowMods()) {
+	    str = str + fm.toString() + "\n";
 	}
-
-	public List<OFFlowMod> getGenerateParentFlowMods(OFFlowMod fm) {
-		return this.generatedParentFlowModsDictionary.get(fm);
-	}
-
-	public List<OFFlowMod> deleteFlowMods(List<OFFlowMod> flowMods) {
-		return this.flowModStore.removaAll(flowMods);
-	}
+	return str;
+    }
+    
+    public List<OVXFlowMod> getGenerateParentFlowMods(OVXFlowMod fm) {
+	return this.generatedParentFlowModsDictionary.get(fm);
+    }
+    
+    public List<OVXFlowMod> deleteFlowMods(List<OVXFlowMod> flowMods) {
+	return this.flowModStore.removaAll(flowMods);
+    }
 	
-	public void addGeneratedParentFlowMod (OFFlowMod fm, OFFlowMod generateParentFlowMod) {
-		this.generatedParentFlowModsDictionary.get(fm).add(generateParentFlowMod);
+    public void addGeneratedParentFlowMod (OVXFlowMod fm,
+					   OVXFlowMod generateParentFlowMod) {
+	this.generatedParentFlowModsDictionary.get(fm).add(generateParentFlowMod);
+    }
+    
+    public void deleteGenerateParentFlowModKey (OVXFlowMod fm) {
+	this.generatedParentFlowModsDictionary.remove(fm);
+    }
+    
+    public void deleteGenerateParentFlowModKeys (List<OVXFlowMod> fms) {
+	for (OVXFlowMod fm : fms) {
+	    this.deleteGenerateParentFlowModKey(fm);
 	}
-	
-	public void deleteGenerateParentFlowModKey (OFFlowMod fm) {
-		this.generatedParentFlowModsDictionary.remove(fm);
-	}
-	
-	public void deleteGenerateParentFlowModKeys (List<OFFlowMod> fms) {
-		for (OFFlowMod fm : fms) {
-			this.deleteGenerateParentFlowModKey(fm);
-		}
-	}
-	
-	public List<OFFlowMod> getPotentialFlowMods (OFFlowMod fm) {
-		return this.flowModStore.getPotentialFlowMods(fm);
-	}
+    }
+    
+    public List<OVXFlowMod> getPotentialFlowMods (OVXFlowMod fm) {
+	return this.flowModStore.getPotentialFlowMods(fm);
+    }
 }

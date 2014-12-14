@@ -46,14 +46,66 @@ import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.Wildcards.Flag;
 import org.openflow.protocol.action.OFAction;
 
+import edu.princeton.cs.hsa.PlumbingFlowMod;
+
 public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 
     private final Logger log = LogManager.getLogger(OVXFlowMod.class.getName());
+
+    // FlowMods derived from this FlowMod during/after composition.
+    private List<OVXFlowMod> childrenFlowMods = new LinkedList<OVXFlowMod>();
 
     private OVXSwitch sw = null;
     private final List<OFAction> approvedActions = new LinkedList<OFAction>();
 
     private long ovxCookie = -1;
+
+    public OVXFlowMod() {
+	super();
+    }
+
+    // Construct OVXFlowMod from OFFlowMod.
+    public OVXFlowMod(final OFFlowMod fm) {
+	super();
+	this.match = fm.getMatch();
+	this.cookie = fm.getCookie();
+	this.command = fm.getCommand();
+	this.idleTimeout = fm.getIdleTimeout();
+	this.hardTimeout = fm.getHardTimeout();
+	this.priority = fm.getPriority();
+	this.bufferId = fm.getBufferId();
+	this.outPort = fm.getOutPort();
+	this.flags = fm.getFlags();
+	this.actions = fm.getActions();
+
+	// Start with this in childrenFlowMods.
+	this.childrenFlowMods.add(this);
+    }
+
+    public void removeChildFlowMod(OVXFlowMod child) {
+	this.childrenFlowMods.remove(child);
+    }
+
+    public List<OVXFlowMod> getChildrenFlowMods() {
+	return this.childrenFlowMods;
+    }
+
+    public void addChildFlowMod(OVXFlowMod child) {
+	this.childrenFlowMods.add(child);
+    }
+
+    public void addChildrenFlowMods(List<OVXFlowMod> otherChildren) {
+	this.childrenFlowMods.addAll(otherChildren);
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+	if (!(obj instanceof OVXFlowMod)) {
+	    return false;
+	}
+	final OVXFlowMod other = (OVXFlowMod) obj;
+	return super.equals(other);
+    }
     
     @Override
     public void devirtualize(final OVXSwitch sw) {

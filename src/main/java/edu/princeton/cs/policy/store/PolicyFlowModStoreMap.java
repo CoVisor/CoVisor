@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMatch;
+import net.onrc.openvirtex.messages.OVXFlowMod;
 
 public class PolicyFlowModStoreMap<O> extends PolicyFlowModStore {
 
@@ -22,9 +23,9 @@ public class PolicyFlowModStoreMap<O> extends PolicyFlowModStore {
 	}
 	
 	@Override
-	public void setStore(List<OFFlowMod> flowMods) {
+	public void setStore(List<OVXFlowMod> flowMods) {
 		this.clear();
-		for (OFFlowMod fm : flowMods) {
+		for (OVXFlowMod fm : flowMods) {
 			this.add(fm);
 		}
 	}
@@ -35,7 +36,7 @@ public class PolicyFlowModStoreMap<O> extends PolicyFlowModStore {
 	}
 
 	@Override
-	public void add(OFFlowMod fm) {
+	public void add(OVXFlowMod fm) {
 		O key = this.getKey(fm);
 		PolicyFlowModStore value = this.flowModsMap.get(key);
 		if (value == null) {
@@ -46,7 +47,7 @@ public class PolicyFlowModStoreMap<O> extends PolicyFlowModStore {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private O getKey (OFFlowMod fm) {
+	private O getKey (OVXFlowMod fm) {
 		
 		OFMatch match = null;
 		if (this.isLeftInSequentialComposition) {
@@ -146,7 +147,7 @@ public class PolicyFlowModStoreMap<O> extends PolicyFlowModStore {
 	}
 
 	@Override
-	public OFFlowMod remove(OFFlowMod fm) {
+	public OVXFlowMod remove(OVXFlowMod fm) {
 		O key = this.getKey(fm);
 		PolicyFlowModStore value = this.flowModsMap.get(key);
 		if (value != null) {
@@ -157,13 +158,13 @@ public class PolicyFlowModStoreMap<O> extends PolicyFlowModStore {
 	}
 
 	@Override
-	public List<OFFlowMod> removaAll(List<OFFlowMod> flowMods) {
-		List<OFFlowMod> deletedFms = new ArrayList<OFFlowMod>();
-		for (OFFlowMod fm : flowMods) {
+	public List<OVXFlowMod> removaAll(List<OVXFlowMod> flowMods) {
+		List<OVXFlowMod> deletedFms = new ArrayList<OVXFlowMod>();
+		for (OVXFlowMod fm : flowMods) {
 			O key = this.getKey(fm);
 			PolicyFlowModStore value = this.flowModsMap.get(key);
 			if (value != null) {
-				OFFlowMod deleted = value.remove(fm);
+				OVXFlowMod deleted = value.remove(fm);
 				if (deleted != null) {
 					deletedFms.add(deleted);
 				}
@@ -173,8 +174,8 @@ public class PolicyFlowModStoreMap<O> extends PolicyFlowModStore {
 	}
 
 	@Override
-	public List<OFFlowMod> getFlowMods() {
-		List<OFFlowMod> flowMods = new ArrayList<OFFlowMod>();
+	public List<OVXFlowMod> getFlowMods() {
+		List<OVXFlowMod> flowMods = new ArrayList<OVXFlowMod>();
 		for (PolicyFlowModStore flowModStore : this.flowModsMap.values()) {
 			flowMods.addAll(flowModStore.getFlowMods());
 		}
@@ -182,12 +183,12 @@ public class PolicyFlowModStoreMap<O> extends PolicyFlowModStore {
 	}
 
 	@Override
-	public List<OFFlowMod> getPotentialFlowMods(OFFlowMod fm) {
+	public List<OVXFlowMod> getPotentialFlowMods(OVXFlowMod fm) {
 		O key = this.getKey(fm);
 		if (key.equals(wildcardKey)) {
 			return this.getFlowMods();
 		} else {
-			List<OFFlowMod> potentialFlowMods = new ArrayList<OFFlowMod>();
+			List<OVXFlowMod> potentialFlowMods = new ArrayList<OVXFlowMod>();
 			
 			// get flowmods that match this field
 			PolicyFlowModStore value = this.flowModsMap.get(key);

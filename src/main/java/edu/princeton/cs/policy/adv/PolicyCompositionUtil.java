@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Random;
 
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
+import net.onrc.openvirtex.messages.OVXFlowMod;
 
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMatch;
@@ -22,11 +23,11 @@ public class PolicyCompositionUtil {
 	public static final short SEQUENTIAL_SHIFT = 8;
 	public static final short OVERRIDE_SHIFT = 8;
 	
-	public static List<OFFlowMod> diffFlowMods (List<OFFlowMod> flowMods1, List<OFFlowMod> flowMods2) {
-		List<OFFlowMod> flowModsDiff = new ArrayList<OFFlowMod>();
-		for (OFFlowMod fm1 : flowMods1){
+	public static List<OVXFlowMod> diffFlowMods (List<OVXFlowMod> flowMods1, List<OVXFlowMod> flowMods2) {
+		List<OVXFlowMod> flowModsDiff = new ArrayList<OVXFlowMod>();
+		for (OVXFlowMod fm1 : flowMods1){
 			boolean isContained = false;
-			for (OFFlowMod fm2 : flowMods2) {
+			for (OVXFlowMod fm2 : flowMods2) {
 				if (fm1.getMatch().equals(fm2.getMatch()) && fm1.getPriority() == fm2.getPriority()) {
 					isContained = true;
 					break;
@@ -39,9 +40,9 @@ public class PolicyCompositionUtil {
 		return flowModsDiff;
 	}
 
-	public static OFFlowMod parallelComposition(OFFlowMod fm1, OFFlowMod fm2) {
+	public static OVXFlowMod parallelComposition(OVXFlowMod fm1, OVXFlowMod fm2) {
 		
-		OFFlowMod composedFm = new OFFlowMod();
+		OVXFlowMod composedFm = new OVXFlowMod();
 		composedFm.setCommand(OFFlowMod.OFPFC_ADD);
 		composedFm.setIdleTimeout((short)0); // 0 means permanent
 		composedFm.setHardTimeout((short)0); // 0 means permanent
@@ -77,7 +78,7 @@ public class PolicyCompositionUtil {
 		return composedFm;
 	}
 	
-	public static OFFlowMod sequentialComposition(OFFlowMod fm1, OFFlowMod fm2) {
+	public static OVXFlowMod sequentialComposition(OVXFlowMod fm1, OVXFlowMod fm2) {
 		
 		// check fm1 actions, if fwd or drop, stop
 		boolean flag = false;
@@ -93,19 +94,19 @@ public class PolicyCompositionUtil {
 			}
 		}
 		if (flag) {
-			OFFlowMod composedFm = null;
-			try {
+			OVXFlowMod composedFm = null;
+			//try {
 				composedFm = fm1.clone();
 				composedFm.setPriority(
 						(short) (fm1.getPriority() * PolicyCompositionUtil.SEQUENTIAL_SHIFT));
-			} catch (CloneNotSupportedException e) {
+				/*} catch (CloneNotSupportedException e) {
 				e.printStackTrace();
-			}
+				}*/
 			return composedFm;
 		}
 		
 		// compose logic
-		OFFlowMod composedFm = new OFFlowMod();
+		OVXFlowMod composedFm = new OVXFlowMod();
 		composedFm.setCommand(OFFlowMod.OFPFC_ADD);
 		composedFm.setIdleTimeout((short)0);
 		composedFm.setHardTimeout((short)0);
@@ -502,9 +503,9 @@ public class PolicyCompositionUtil {
 	 *	+ "src-mac=00:00:00:00:00:01,dst-mac=00:00:00:00:00:02,src-port=80,dst-port=1,protocol=10,"
 	 *	+ "actions=output:1,actions=set-dst-ip:0.0.0.1");
 	 */
-	public static OFFlowMod genFlowMod (String str) {
+	public static OVXFlowMod genFlowMod (String str) {
 		
-		OFFlowMod fm = new OFFlowMod();
+		OVXFlowMod fm = new OVXFlowMod();
 		fm.setCommand(OFFlowMod.OFPFC_ADD);
 		fm.setIdleTimeout((short) 0);
 		fm.setHardTimeout((short) 0);
